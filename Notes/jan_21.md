@@ -57,7 +57,7 @@ _AKA DC transfer curve_
 We can learn from this curve that voltages close to VDD / 2 create an _unstable_ output that
 can oscillate, short, or be sadness overall.
 
-Operating Regions
+Operating Regions (See [Jan 23 notes](./jan_23.md) for more)
 
 | Region |    NMOS    | PMOS |
 | :----: | :--------: | :--: |
