@@ -91,7 +91,7 @@ auto config_t::print() const -> void
         size);
 }
 
-auto bin_results_t::report() const -> void 
+auto bin_results_t::report() const -> void
 {
     fmt::println("bin_maxes:  {}", maxes);
     fmt::println("bin_counts: {}", counts);
@@ -171,7 +171,7 @@ auto serial_solver(const config_t &config, const std::span<fp> dataset) -> bin_r
 
     std::vector<fp> ranges(config.bins);
     fp f{ config.max };
-    fp diff{ config.max - config.min / static_cast<fp>(config.bins) };
+    fp diff{ (config.max - config.min) / static_cast<fp>(config.bins) };
 
     for (auto it = ranges.rbegin(); it != ranges.rend(); ++it) {
         auto &range = *it;
