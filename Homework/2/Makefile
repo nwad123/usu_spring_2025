@@ -23,3 +23,9 @@ submission: main_artifact
 	cd ..; \
 		tar --exclude='*/${BUILD_DIR}/*' --exclude='tests/*' --exclude='*/\.*' \
 		--exclude='*.tar.gz' -cvzf ${NAME}_hw2.tar.gz ${CURDIR}
+
+.PHONY: test 
+test: build 
+	@echo ""
+	@cd ${BUILD_DIR}; \
+		./main 0 10 0.0 5.0 100
