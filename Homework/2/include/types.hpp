@@ -66,7 +66,7 @@ inline auto config_t::print() const -> void
 
 inline auto bin_results_t::report() const -> void
 {
-    fmt::println("bin_maxes:  {}", maxes);
-    fmt::println("bin_counts: {}", counts);
+    fmt::println("Maxes:  {}", maxes);
+    fmt::println("Counts: {}", counts);
 }
 }// namespace hpc

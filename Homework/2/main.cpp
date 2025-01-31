@@ -1,9 +1,12 @@
 #include "concepts.hpp"
+#include "dataset_generator.hpp"
 #include "fmt/core.h"
 #include "parse_args.hpp"
+#include "solver_tester.hpp"
+#include "solvers/parallel.hpp"
+#include "solvers/serial.hpp"
 #include "strings.hpp"
 #include "types.hpp"
-#include "dataset_generator.hpp"
 
 #include <cstdlib>
 #include <optional>
@@ -33,6 +36,8 @@ auto main(int argc, char **argv) -> int
     config->print();
 
     auto dataset = make_dataset(*config);
+
+    SolverTester{ *config, dataset }(Serial{}, Parallel{});
 
     return 0;
 }
