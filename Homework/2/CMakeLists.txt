@@ -17,7 +17,11 @@ FetchContent_MakeAvailable(fmt)
 include(CompilerWarnings.cmake)
 waddoups_set_project_warnings()
 
+include_directories(include)
+
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-add_executable(main main.cpp)
+set(SOLVERS solvers/serial.cpp solvers/parallel.cpp)
+
+add_executable(main main.cpp ${SOLVERS})
 target_link_libraries(main fmt::fmt)
