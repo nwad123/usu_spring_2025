@@ -28,4 +28,4 @@ submission: main_artifact
 test: build 
 	@echo ""
 	@cd ${BUILD_DIR}; \
-		./main 0 10 0.0 5.0 100
+		./main 4 10 0.0 5.0 100

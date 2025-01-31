@@ -3,11 +3,13 @@
 #include <algorithm>
 #include <charconv>
 #include <cstdlib>
+#include <functional>
 #include <iterator>
 #include <optional>
 #include <random>
 #include <span>
 #include <string_view>
+#include <thread>
 #include <vector>
 
 using std::literals::string_view_literals::operator""sv;
@@ -21,7 +23,7 @@ constexpr static auto CONFIG = "Configuration"sv;
 
 struct config_t
 {
-    size_t thread;
+    size_t threads;
     size_t bins;
     fp min;
     fp max;
@@ -70,9 +72,15 @@ auto main(int argc, char **argv) -> int
 
     auto dataset = make_dataset(*config);
 
-    auto bins = serial_solver(*config, dataset);
+    {
+        auto bins = serial_solver(*config, dataset);
+        bins.report();
+    }
 
-    bins.report();
+    {
+        auto tree_bins = tree_solver(*config, dataset);
+        tree_bins.report();
+    }
 
     return 0;
 }
@@ -84,7 +92,7 @@ auto config_t::print() const -> void
         "Number of bins:    {}\n"
         "Range of dataset:  {}-{}\n"
         "Size of dataset:   {}\n",
-        thread,
+        threads,
         bins,
         min,
         max,
@@ -121,7 +129,7 @@ auto parse_args(const std::span<char *> args) -> std::optional<config_t>
     constexpr static auto MAX_INDEX = 4UL;
     constexpr static auto DATA_INDEX = 5UL;
 
-    if (!parse_int(args[THREAD_INDEX], c.thread)) {
+    if (!parse_int(args[THREAD_INDEX], c.threads)) {
         fmt::println("Failed to get number of threads.");
         return std::nullopt;
     }
@@ -190,4 +198,62 @@ auto serial_solver(const config_t &config, const std::span<fp> dataset) -> bin_r
     for (const auto data : dataset) { insert(data); }
 
     return bin;
+}
+
+auto tree_solver(const config_t &config, const std::span<fp> dataset) -> bin_results_t
+{
+    using std::thread;
+    using std::ref;
+
+    auto task = [&config, &dataset](/*in*/ size_t id, /*out*/ bin_results_t &bin) {
+        const auto num_elements = config.size / config.threads;
+        const auto starting_element = id * num_elements;
+
+        const auto dataset_slice = dataset.subspan(starting_element, num_elements);
+
+        bin.maxes.resize(config.bins);
+        bin.counts.resize(config.bins);
+
+        std::vector<fp> ranges(config.bins);
+        fp f{ config.max };
+        fp diff{ (config.max - config.min) / static_cast<fp>(config.bins) };
+
+        for (auto it = ranges.rbegin(); it != ranges.rend(); ++it) {
+            auto &range = *it;
+            range = f;
+            f -= diff;
+        }
+
+        auto insert = [&ranges, &bin](const fp value) {
+            auto bin_it = std::upper_bound(ranges.cbegin(), ranges.cend(), value);
+            auto index = std::distance(ranges.cbegin(), bin_it);
+
+            bin.counts[index]++;
+            if (bin.maxes[index] < value) { bin.maxes[index] = value; }
+        };
+
+        for (const auto data : dataset_slice) { insert(data); }
+    };
+
+
+    std::vector<bin_results_t> bins{ config.threads };
+    std::vector<thread> threads{};
+    threads.reserve(config.threads);
+
+    for (size_t id = 0; id < config.threads; id++) { threads.push_back(thread{ task, id, ref(bins[id]) }); }
+
+    for (auto &thread : threads) { thread.join(); }
+
+    bin_results_t output{};
+    output.maxes.resize(config.bins);
+    output.counts.resize(config.bins);
+
+    for (auto &bin : bins) {
+        for (size_t i = 0; i < config.bins; i++) {
+            output.maxes[i] = std::max(bin.maxes[i], output.maxes[i]);
+            output.counts[i] += bin.counts[i];
+        }
+    }
+
+    return output;
 }
