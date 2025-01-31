@@ -27,5 +27,14 @@ submission: main_artifact
 .PHONY: test 
 test: build 
 	@echo ""
+	@echo "##### Basic test #####"
 	@cd ${BUILD_DIR}; \
 		./main 4 10 0.0 5.0 100
+	@echo ""
+	@echo "##### Uneven Elements test #####"
+	@cd ${BUILD_DIR}; \
+		./main 3 10 0.0 5.0 79
+	@echo ""
+	@echo "##### Bigger Data test #####"
+	@cd ${BUILD_DIR}; \
+		./main 3 10 0.0 5.0 1000000
