@@ -2,6 +2,7 @@
 #include "fmt/ranges.h"
 #include <algorithm>
 #include <charconv>
+#include <chrono>
 #include <cstdlib>
 #include <functional>
 #include <iterator>
@@ -40,12 +41,33 @@ struct bin_results_t
     auto report() const -> void;
 };
 
+class timer
+{
+  private:
+    using clock = std::chrono::high_resolution_clock;
+    using time_point = clock::time_point;
+
+    time_point start_time;
+
+  public:
+    timer() : start_time(clock::now()) {}
+
+    size_t elapsed_ms() const
+    {
+        const auto current = clock::now();
+        const auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(current - start_time);
+        return static_cast<size_t>(duration.count());
+    }
+
+    void reset() { start_time = clock::now(); }
+};
+
 auto parse_args(const std::span<char *> args) -> std::optional<config_t>;
 
 auto make_dataset(const config_t &config) -> std::vector<fp>;
 
 auto serial_solver(const config_t &config, const std::span<fp> dataset) -> bin_results_t;
-auto tree_solver(const config_t &config, const std::span<fp> dataset) -> bin_results_t;
+auto parallel_solver(const config_t &config, const std::span<fp> dataset) -> bin_results_t;
 auto std_solver(const config_t &config, const std::span<fp> dataset) -> bin_results_t;
 
 auto main(int argc, char **argv) -> int
@@ -78,7 +100,7 @@ auto main(int argc, char **argv) -> int
     }
 
     {
-        auto tree_bins = tree_solver(*config, dataset);
+        auto tree_bins = parallel_solver(*config, dataset);
         tree_bins.report();
     }
 
@@ -200,7 +222,7 @@ auto serial_solver(const config_t &config, const std::span<fp> dataset) -> bin_r
     return bin;
 }
 
-auto tree_solver(const config_t &config, const std::span<fp> dataset) -> bin_results_t
+auto parallel_solver(const config_t &config, const std::span<fp> dataset) -> bin_results_t
 {
     using std::thread;
     using std::ref;
