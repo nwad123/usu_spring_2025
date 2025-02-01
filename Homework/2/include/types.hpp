@@ -53,10 +53,12 @@ class timer
 inline auto config_t::print() const -> void
 {
     fmt::println(
-        "Number of threads: {}\n"
-        "Number of bins:    {}\n"
-        "Range of dataset:  {}-{}\n"
-        "Size of dataset:   {}\n",
+        "\"Config\": {{\n"
+        "  \"Threads\": {},\n"
+        "  \"Bins\": {},\n"
+        "  \"Data range\":  [{}, {}],\n"
+        "  \"Data size\":   {}\n"
+        "}},",
         threads,
         bins,
         min,
@@ -66,7 +68,7 @@ inline auto config_t::print() const -> void
 
 inline auto bin_results_t::report() const -> void
 {
-    fmt::println("Maxes:  {}", maxes);
-    fmt::println("Counts: {}", counts);
+    fmt::println("  \"Maxes\":  {},", maxes);
+    fmt::println("  \"Counts\": {}", counts);
 }
 }// namespace hpc

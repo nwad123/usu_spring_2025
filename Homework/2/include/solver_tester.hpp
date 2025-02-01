@@ -21,21 +21,29 @@ class SolverTester
 template<Solver... S>
 auto SolverTester::operator()(/*in*/ S &&...solvers) -> void
 {
-    auto test = [&](Solver auto solver) {
-        fmt::println("# Testing: {}", solver.name);
+    auto test = [&](/*in*/ Solver auto solver) {
+        fmt::println("\"{}\": {{\n  ", solver.name);
         {
             timer t{};
             const auto results = solver(config, dataset);
             const auto elapsed = t.elapsed_ms();
 
-            fmt::println("# Finished. Took {} ms", elapsed);
+            fmt::println("  \"Time\": {},", elapsed);
 
             results.report();
 
-            fmt::println("");
+            fmt::println("}},");
         }
     };
 
+    fmt::println("{{");
+    config.print();
+
     ((test(solvers)), ...);
+
+    // This line is literally here because without it I can't make 
+    // the JSON easily valid.
+    fmt::println("\"Total tests:\": {}", sizeof...(S));
+    fmt::println("}}");
 }
 }// namespace hpc

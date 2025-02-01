@@ -24,20 +24,18 @@ auto main(int argc, char **argv) -> int
         return EXIT_FAILURE;
     }
 
-    auto config = parse_args(args);
+    auto config_opt = parse_args(args);
 
-    if (!config) {
+    if (!config_opt) {
         fmt::println("Failed to parse args.");
         fmt::println(USAGE);
         return EXIT_FAILURE;
     }
 
-    fmt::println(WELCOME);
-    config->print();
+    const auto config = *config_opt;
 
-    auto dataset = make_dataset(*config);
-
-    SolverTester{ *config, dataset }(Serial{}, Parallel{});
+    auto dataset = make_dataset(config);
+    SolverTester{ config, dataset }(Serial{}, Parallel{});
 
     return 0;
 }
