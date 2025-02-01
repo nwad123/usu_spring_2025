@@ -19,7 +19,7 @@ namespace hpc {
         f -= diff;
     }
 
-    auto insert = [&ranges, &bin](const fp value) {
+    auto insert = [&ranges, &bin](/*in*/ const fp value) {
         auto bin_it = std::upper_bound(ranges.cbegin(), ranges.cend(), value);
         auto index = std::distance(ranges.cbegin(), bin_it);
 

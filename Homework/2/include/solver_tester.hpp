@@ -22,21 +22,20 @@ template<Solver... S>
 auto SolverTester::operator()(/*in*/ S &&...solvers) -> void
 {
     auto test = [&](/*in*/ Solver auto solver, /*in*/ const size_t index) {
-        fmt::println("\"{}\": {{\n  ", solver.name);
-        {
-            timer t{};
-            const auto results = solver(config, dataset);
-            const auto elapsed = t.elapsed_ms();
+        fmt::println("\"{}\": {{", solver.name);
 
-            fmt::println("  \"Time\": {},", elapsed);
+        timer t{};
+        const auto results = solver(config, dataset);
+        const auto elapsed = t.elapsed_ms();
 
-            results.report();
+        fmt::println("  \"Time\": {},", elapsed);
 
-            if (index < sizeof...(S) - 1) {
-                fmt::println("}},");
-            } else {
-                fmt::println("}}");
-            }
+        results.report();
+
+        if (index < sizeof...(S) - 1) {
+            fmt::println("}},");
+        } else {
+            fmt::println("}}");
         }
     };
 
