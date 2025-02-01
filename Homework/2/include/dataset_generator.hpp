@@ -6,7 +6,7 @@
 #include <random>
 
 namespace hpc {
-inline auto make_dataset(const config_t &config) -> std::vector<fp>
+inline auto make_dataset(const Config &config) -> std::vector<fp>
 {
     constexpr static auto SEED = size_t{ 100 };
     std::mt19937 generator(SEED);

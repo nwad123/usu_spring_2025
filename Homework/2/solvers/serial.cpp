@@ -3,9 +3,9 @@
 #include <algorithm>
 
 namespace hpc {
-[[nodiscard]] auto Serial::operator()(const config_t &config, const std::span<fp> dataset) const -> bin_results_t
+[[nodiscard]] auto Serial::operator()(const Config &config, const std::span<fp> dataset) const -> Bin
 {
-    bin_results_t bin;
+    Bin bin;
     bin.maxes.resize(config.bins);
     bin.counts.resize(config.bins);
 

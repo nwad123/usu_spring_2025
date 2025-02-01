@@ -8,7 +8,7 @@ class Serial
 {
   public:
     static constexpr std::string_view name = "Serial";
-    [[nodiscard]] auto operator()(const config_t &config, const std::span<fp> dataset) const -> bin_results_t;
+    [[nodiscard]] auto operator()(const Config &config, const std::span<fp> dataset) const -> Bin;
 };
 static_assert(Solver<Serial>);
 }// namespace hpc

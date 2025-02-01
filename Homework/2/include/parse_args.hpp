@@ -11,8 +11,8 @@ namespace detail {
     constexpr static auto USAGE = "Usage: <threads : nat> <bins : nat> <min : float> <max : float> <size : nat>"sv;
     constexpr static auto EXPECTED_ARGC = 6U;
 
-    auto parse_args(const std::span<char *> args) -> std::optional<config_t>;
+    auto parse_args(const std::span<char *> args) -> std::optional<Config>;
 }// namespace detail
 
-auto parse_args(const std::span<char *> args) -> std::optional<config_t>;
+auto parse_args(const std::span<char *> args) -> std::optional<Config>;
 }// namespace hpc

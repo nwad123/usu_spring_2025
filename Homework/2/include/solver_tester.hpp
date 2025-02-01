@@ -8,11 +8,11 @@ namespace hpc {
 class SolverTester
 {
   private:
-    const config_t config;
+    const Config config;
     const std::span<fp> dataset;
 
   public:
-    SolverTester(/*in*/ const config_t config, /*in*/ const std::span<fp> dataset) : config(config), dataset(dataset) {}
+    SolverTester(/*in*/ const Config config, /*in*/ const std::span<fp> dataset) : config(config), dataset(dataset) {}
 
     template<Solver... S>
     auto operator()(/*in*/ S &&...solvers) -> void;
@@ -24,7 +24,7 @@ auto SolverTester::operator()(/*in*/ S &&...solvers) -> void
     auto test = [&](/*in*/ Solver auto solver, /*in*/ const size_t index) {
         fmt::println("\"{}\": {{", solver.name);
 
-        timer t{};
+        Timer t{};
         const auto results = solver(config, dataset);
         const auto elapsed = t.elapsed_ms();
 

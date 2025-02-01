@@ -4,12 +4,12 @@
 #include <thread>
 
 namespace hpc {
-[[nodiscard]] auto Parallel::operator()(const config_t &config, const std::span<fp> dataset) const -> bin_results_t
+[[nodiscard]] auto Parallel::operator()(const Config &config, const std::span<fp> dataset) const -> Bin
 {
     using std::thread;
     using std::ref;
 
-    auto task = [&config, &dataset](/*in*/ size_t id, /*in*/ const std::span<fp> ranges, /*out*/ bin_results_t &bin) {
+    auto task = [&config, &dataset](/*in*/ size_t id, /*in*/ const std::span<fp> ranges, /*out*/ Bin &bin) {
         const auto num_elements = config.size / config.threads;
         const auto starting_element = id * num_elements;
 
@@ -49,7 +49,7 @@ namespace hpc {
         f -= diff;
     }
 
-    std::vector<bin_results_t> bins{ config.threads };
+    std::vector<Bin> bins{ config.threads };
     std::vector<thread> threads{};
     threads.reserve(config.threads);
 
@@ -59,7 +59,7 @@ namespace hpc {
 
     for (auto &thread : threads) { thread.join(); }
 
-    bin_results_t output{};
+    Bin output{};
     output.maxes.resize(config.bins);
     output.counts.resize(config.bins);
 

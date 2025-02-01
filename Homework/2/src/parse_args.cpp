@@ -3,7 +3,7 @@
 #include "fmt/base.h"
 #include <charconv>
 
-auto hpc::parse_args(const std::span<char *> args) -> std::optional<config_t>
+auto hpc::parse_args(const std::span<char *> args) -> std::optional<Config>
 {
     if (args.size() != detail::EXPECTED_ARGC) {
         fmt::println(detail::USAGE);
@@ -21,7 +21,7 @@ auto hpc::parse_args(const std::span<char *> args) -> std::optional<config_t>
     return config;
 }
 
-auto hpc::detail::parse_args(const std::span<char *> args) -> std::optional<config_t>
+auto hpc::detail::parse_args(const std::span<char *> args) -> std::optional<Config>
 {
     auto parse_int = [](const char *str, size_t &number) -> bool {
         const auto len = strlen(str);
@@ -37,7 +37,7 @@ auto hpc::detail::parse_args(const std::span<char *> args) -> std::optional<conf
         return (c != str);
     };
 
-    config_t c{};
+    Config c{};
 
     constexpr static auto THREAD_INDEX = 1UL;
     constexpr static auto BINS_INDEX = 2UL;
