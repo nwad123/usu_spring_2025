@@ -24,14 +24,14 @@ submission: main_artifact
 		tar --exclude='*/${BUILD_DIR}/*' --exclude='tests/*' --exclude='*/\.*' \
 		--exclude='*.tar.gz' -cvzf ${NAME}_hw2.tar.gz ${CURDIR}
 
-.PHONY: test 
-test: build 
+.PHONY: cli_test
+cli_test: build 
 	@echo ""
 	@echo "##### Basic test #####"
 	@cd ${BUILD_DIR}; \
-		./main 4 10 0.0 5.0 100
+		./cli 4 10 0.0 5.0 100
 	@echo ""
 	@echo "##### Uneven Elements test #####"
 	@cd ${BUILD_DIR}; \
-		./main 3 10 0.0 5.0 79
+		./cli 3 10 0.0 5.0 79
 

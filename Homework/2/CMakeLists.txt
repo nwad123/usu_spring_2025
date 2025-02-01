@@ -23,5 +23,5 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 set(SOLVERS solvers/serial.cpp solvers/parallel.cpp)
 
-add_executable(main main.cpp ${SOLVERS})
+add_executable(cli cli.cpp ${SOLVERS})
 target_link_libraries(main fmt::fmt)
