@@ -12,15 +12,27 @@ using namespace hpc;
 auto main() -> int
 {
     static constexpr std::array<size_t, 6> THREADS = { 1, 2, 4, 8, 16, 32 };
-    static constexpr std::array<size_t, 6> SIZES = { 1'000'000, 10'000'000, 100'000'000, 1'000'000'000, 2'000'000'000, 4'000'000'000 };
+    static constexpr std::array<size_t, 6> SIZES = {
+        1'000'000, 10'000'000, 100'000'000, 1'000'000'000, 2'000'000'000, 4'000'000'000
+    };
     static constexpr std::pair<fp, fp> RANGE = { 0.0, 5.0 };
     static constexpr auto BINS = 5;
 
     // vector for storing all outputs
     std::vector<Result> results;
-    results.reserve(THREADS.size() * SIZES.size());
+    results.reserve(THREADS.size() * SIZES.size() + SIZES.size());
 
-    // handrolled cartesian product
+    // Single pass for serial timing
+    for (const auto size : SIZES) {
+        Config config(1, BINS, RANGE.first, RANGE.second, size);
+        auto dataset = make_dataset(config);
+
+        SolverTester solver_tester(config, dataset);
+
+        for (const auto &result : solver_tester(Parallel{})) { results.emplace_back(result); }
+    }
+
+    // handrolled cartesian product for parallel options
     for (const auto threads : THREADS) {
         for (const auto size : SIZES) {
             Config config(threads, BINS, RANGE.first, RANGE.second, size);
@@ -28,7 +40,7 @@ auto main() -> int
 
             SolverTester solver_tester(config, dataset);
 
-            for (const auto &result : solver_tester(Serial{}, Parallel{})) { results.emplace_back(result); }
+            for (const auto &result : solver_tester(Parallel{})) { results.emplace_back(result); }
         }
     }
 
