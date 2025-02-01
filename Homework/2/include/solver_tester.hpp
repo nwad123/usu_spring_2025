@@ -21,7 +21,7 @@ class SolverTester
 template<Solver... S>
 auto SolverTester::operator()(/*in*/ S &&...solvers) -> void
 {
-    auto test = [&](/*in*/ Solver auto solver) {
+    auto test = [&](/*in*/ Solver auto solver, /*inout*/ size_t &index) {
         fmt::println("\"{}\": {{\n  ", solver.name);
         {
             timer t{};
@@ -32,18 +32,22 @@ auto SolverTester::operator()(/*in*/ S &&...solvers) -> void
 
             results.report();
 
-            fmt::println("}},");
+            if (index < sizeof...(S) - 1) {
+                fmt::println("}},");
+                index++;
+            } else {
+                fmt::println("}}");
+            }
         }
     };
 
     fmt::println("{{");
     config.print();
 
-    ((test(solvers)), ...);
+    size_t solver_index{ 0 };
 
-    // This line is literally here because without it I can't make 
-    // the JSON easily valid.
-    fmt::println("\"Total tests:\": {}", sizeof...(S));
+    ((test(solvers, solver_index)), ...);
+
     fmt::println("}}");
 }
 }// namespace hpc
