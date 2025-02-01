@@ -21,7 +21,7 @@ class SolverTester
 template<Solver... S>
 auto SolverTester::operator()(/*in*/ S &&...solvers) -> void
 {
-    auto test = [&](/*in*/ Solver auto solver, /*inout*/ size_t &index) {
+    auto test = [&](/*in*/ Solver auto solver, /*in*/ const size_t index) {
         fmt::println("\"{}\": {{\n  ", solver.name);
         {
             timer t{};
@@ -34,7 +34,6 @@ auto SolverTester::operator()(/*in*/ S &&...solvers) -> void
 
             if (index < sizeof...(S) - 1) {
                 fmt::println("}},");
-                index++;
             } else {
                 fmt::println("}}");
             }
@@ -46,7 +45,7 @@ auto SolverTester::operator()(/*in*/ S &&...solvers) -> void
 
     size_t solver_index{ 0 };
 
-    ((test(solvers, solver_index)), ...);
+    ((test(solvers, solver_index++)), ...);
 
     fmt::println("}}");
 }
