@@ -29,7 +29,7 @@ auto main() -> int
 
         SolverTester solver_tester(config, dataset);
 
-        for (const auto &result : solver_tester(Parallel{})) { results.emplace_back(result); }
+        for (const auto &result : solver_tester(Serial{})) { results.emplace_back(result); }
     }
 
     // handrolled cartesian product for parallel options
