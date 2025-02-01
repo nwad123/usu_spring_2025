@@ -35,3 +35,8 @@ cli_test: build
 	@cd ${BUILD_DIR}; \
 		./cli 3 10 0.0 5.0 79
 
+.PHONY: run_auto 
+run_auto: build
+	@echo "Running auto tests... May take some time..."
+	@mkdir -p results
+	./build/auto > results/log.txt
