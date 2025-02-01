@@ -15,37 +15,25 @@ class SolverTester
     SolverTester(/*in*/ const Config config, /*in*/ const std::span<fp> dataset) : config(config), dataset(dataset) {}
 
     template<Solver... S>
-    auto operator()(/*in*/ S &&...solvers) -> void;
+    [[nodiscard]] auto operator()(/*in*/ S &&...solvers) -> std::array<Result, sizeof...(S)>;
 };
 
 template<Solver... S>
-auto SolverTester::operator()(/*in*/ S &&...solvers) -> void
+auto SolverTester::operator()(/*in*/ S &&...solvers) -> std::array<Result, sizeof...(S)>
 {
-    auto test = [&](/*in*/ Solver auto solver, /*in*/ const size_t index) {
-        fmt::println("\"{}\": {{", solver.name);
+    std::array<Result, sizeof...(S)> results;
 
+    auto test = [&](/*in*/ Solver auto solver, /*in*/ const size_t index) {
         Timer t{};
-        const auto results = solver(config, dataset);
+        const auto bins = solver(config, dataset);
         const auto elapsed = t.elapsed_ms();
 
-        fmt::println("  \"Time\": {},", elapsed);
-
-        results.report();
-
-        if (index < sizeof...(S) - 1) {
-            fmt::println("}},");
-        } else {
-            fmt::println("}}");
-        }
+        results[index] = Result(solver.name, elapsed, std::move(bins), config);
     };
 
-    fmt::println("{{");
-    config.print();
+    size_t i{ 0 };
+    (test(solvers, i++), ...);
 
-    size_t solver_index{ 0 };
-
-    ((test(solvers, solver_index++)), ...);
-
-    fmt::println("}}");
+    return results;
 }
 }// namespace hpc

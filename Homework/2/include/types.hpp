@@ -3,6 +3,7 @@
 #include "fmt/base.h"
 #include "fmt/ranges.h"
 #include <chrono>
+#include <string_view>
 #include <vector>
 
 namespace hpc {
@@ -48,6 +49,19 @@ class Timer
     }
 
     void reset() { start_time = clock::now(); }
+};
+
+struct Result
+{
+    std::string_view name;
+    size_t time_ms;
+    Bin bin;
+    Config config;
+
+    constexpr Result() = default;
+    constexpr Result(const std::string_view name, const size_t time_ms, const Bin &&bin, const Config config)
+        : name(name), time_ms(time_ms), bin(bin), config(config)
+    {}
 };
 
 inline auto Config::print() const -> void

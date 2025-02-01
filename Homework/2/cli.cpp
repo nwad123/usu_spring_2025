@@ -22,7 +22,12 @@ auto main(int argc, char **argv) -> int
     const auto config = *config_opt;
 
     auto dataset = make_dataset(config);
-    SolverTester{ config, dataset }(Serial{}, Parallel{});
+    const auto results = SolverTester{ config, dataset }(Serial{}, Parallel{});
+
+    fmt::println("Name,Threads,Elements,Time(ms)");
+    for (const auto &result : results) {
+        fmt::println("{},{},{},{}", result.name, result.config.threads, result.config.size, result.time_ms);
+    }
 
     return 0;
 }
