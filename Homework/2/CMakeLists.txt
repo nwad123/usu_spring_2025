@@ -22,6 +22,7 @@ include_directories(include)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 set(SOLVERS solvers/serial.cpp solvers/parallel.cpp)
+set(SOURCES src/parse_args.cpp)
 
-add_executable(cli cli.cpp ${SOLVERS})
-target_link_libraries(main fmt::fmt)
+add_executable(cli cli.cpp ${SOURCES} ${SOLVERS})
+target_link_libraries(cli fmt::fmt)
