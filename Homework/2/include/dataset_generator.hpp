@@ -6,18 +6,26 @@
 #include <random>
 
 namespace hpc {
-inline auto make_dataset(const Config &config) -> std::vector<fp>
+template<std::uniform_random_bit_generator Generator>
+inline auto
+    make_dataset(/*in*/ const fp min, /*in*/ const fp max, /*in*/ const size_t size, /*in*/ Generator &generator)
+        -> std::vector<fp>
 {
-    constexpr static auto SEED = size_t{ 100 };
-    std::mt19937 generator(SEED);
-    std::uniform_real_distribution<fp> distribution(config.min, config.max);
+    std::uniform_real_distribution<fp> distribution(min, max);
 
     auto random = [&]() -> fp { return distribution(generator); };
 
-    std::vector<fp> dataset(config.size, fp{ 0 });
+    std::vector<fp> dataset(size, fp{ 0 });
 
     std::ranges::generate(dataset, random);
 
     return dataset;
+}
+
+template<size_t Seed = 100>
+inline auto make_dataset(/*in*/ const Config &config) -> std::vector<fp>
+{
+    std::mt19937 generator(Seed);
+    return make_dataset(config.min, config.max, config.size, generator);
 }
 }// namespace hpc
