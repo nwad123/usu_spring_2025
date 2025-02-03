@@ -128,7 +128,7 @@ class simple_semaphore
     }
 
     // No one can signal the first thread that it's all done except the main thread 
-    // so we'll handle that here 
+    // so we'll handle that here
     receivers[0].release();
 
     // theoretically the first thread should actually be the last to finish, so we'll 

@@ -13,7 +13,7 @@ using namespace hpc;
 auto main() -> int
 {
     static constexpr std::array<size_t, 6> THREADS = { 1, 2, 4, 8, 16, 32 };
-    static constexpr std::array<size_t, 6> SIZES = {
+    static constexpr std::array<size_t, 3> SIZES = {
         1'000'000, 10'000'000, 100'000'000, 
     };
     static constexpr std::pair<fp, fp> RANGE = { 0.0, 5.0 };
