@@ -8,42 +8,44 @@
 
 namespace hpc {
 
-class simple_semaphore
-{
-  private:
-    std::binary_semaphore sem_;
-
-  public:
-    constexpr simple_semaphore() : sem_(0) {}
-
-    constexpr auto acquire() -> void { sem_.acquire(); }
-    constexpr auto release() -> void { sem_.release(); }
-};
-
-struct semaphore_pair
-{
-    simple_semaphore sender;
-    simple_semaphore receiver;
-};
-
-struct ThreadSemaphores
-{
-    std::vector<semaphore_pair> semaphores_;
-
-    explicit constexpr ThreadSemaphores(/*in*/ const size_t num_threads)
-        : semaphores_(std::vector<semaphore_pair>(num_threads))
-    {}
-
-    inline constexpr auto ready_to_recv_from(/*in*/ const size_t id) -> void { semaphores_[id].sender.acquire(); }
-
-    inline constexpr auto done_recving_from(/*in*/ const size_t id) -> void { semaphores_[id].receiver.release(); }
-
-    inline constexpr auto completed_work(/*in*/ const size_t id) -> void
+namespace detail {
+    class simple_semaphore
     {
-        semaphores_[id].sender.release();
-        semaphores_[id].receiver.acquire();
-    }
-};
+      private:
+        std::binary_semaphore sem_;
+
+      public:
+        constexpr simple_semaphore() : sem_(0) {}
+
+        constexpr auto acquire() -> void { sem_.acquire(); }
+        constexpr auto release() -> void { sem_.release(); }
+    };
+
+    struct semaphore_pair
+    {
+        simple_semaphore sender;
+        simple_semaphore receiver;
+    };
+
+    struct ThreadSemaphores
+    {
+        std::vector<semaphore_pair> semaphores_;
+
+        explicit constexpr ThreadSemaphores(/*in*/ const size_t num_threads)
+            : semaphores_(std::vector<semaphore_pair>(num_threads))
+        {}
+
+        inline constexpr auto ready_to_recv_from(/*in*/ const size_t id) -> void { semaphores_[id].sender.acquire(); }
+
+        inline constexpr auto done_recving_from(/*in*/ const size_t id) -> void { semaphores_[id].receiver.release(); }
+
+        inline constexpr auto completed_work(/*in*/ const size_t id) -> void
+        {
+            semaphores_[id].sender.release();
+            semaphores_[id].receiver.acquire();
+        }
+    };
+}// namespace detail
 
 [[nodiscard]] auto Tree::operator()(const Config &config, const std::span<fp> dataset) const -> Bin
 {
@@ -88,7 +90,7 @@ struct ThreadSemaphores
         f -= diff;
     }
 
-    ThreadSemaphores thread_semaphores(config.threads);
+    detail::ThreadSemaphores thread_semaphores(config.threads);
 
     std::vector<Bin> bins{ config.threads };
 
