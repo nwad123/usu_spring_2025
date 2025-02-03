@@ -21,7 +21,7 @@ include_directories(include)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-set(SOLVERS solvers/serial.cpp solvers/parallel.cpp solvers/static_parallel.cpp)
+set(SOLVERS solvers/serial.cpp solvers/parallel.cpp)
 set(SOURCES src/parse_args.cpp)
 
 # Add optimizations (comment out to remove)
