@@ -2,6 +2,7 @@
 #include "solver_tester.hpp"
 #include "solvers/parallel.hpp"
 #include "solvers/serial.hpp"
+#include "solvers/tree.hpp"
 #include "types.hpp"
 
 #include <array>
@@ -13,14 +14,14 @@ auto main() -> int
 {
     static constexpr std::array<size_t, 6> THREADS = { 1, 2, 4, 8, 16, 32 };
     static constexpr std::array<size_t, 6> SIZES = {
-        1'000'000, 10'000'000, 100'000'000, 1'000'000'000, 2'000'000'000, 4'000'000'000
+        1'000'000, 10'000'000, 100'000'000, 
     };
     static constexpr std::pair<fp, fp> RANGE = { 0.0, 5.0 };
     static constexpr auto BINS = 5;
 
     // vector for storing all outputs
     std::vector<Result> results;
-    results.reserve(THREADS.size() * SIZES.size() + SIZES.size());
+    results.reserve(THREADS.size() * SIZES.size() * 2 + SIZES.size());
 
     // Single pass for serial timing
     for (const auto size : SIZES) {
@@ -40,7 +41,7 @@ auto main() -> int
 
             SolverTester solver_tester(config, dataset);
 
-            for (const auto &result : solver_tester(Parallel{})) { results.emplace_back(result); }
+            for (const auto &result : solver_tester(Parallel{}, Tree{})) { results.emplace_back(result); }
         }
     }
 
