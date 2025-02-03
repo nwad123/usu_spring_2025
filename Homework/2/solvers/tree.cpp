@@ -56,7 +56,6 @@ class simple_semaphore
     std::vector<simple_semaphore> senders(config.size);
     std::vector<simple_semaphore> receivers(config.size);
 
-
     std::vector<fp> ranges(config.bins);
     fp f{ config.max };
     fp diff{ (config.max - config.min) / static_cast<fp>(config.bins) };
