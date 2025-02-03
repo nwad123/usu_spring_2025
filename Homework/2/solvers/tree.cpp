@@ -2,9 +2,9 @@
 
 #include <algorithm>
 #include <bit>
+#include <ranges>
 #include <semaphore>
 #include <thread>
-#include <ranges>
 
 namespace hpc {
 
@@ -18,6 +18,31 @@ class simple_semaphore
 
     constexpr auto acquire() -> void { sem_.acquire(); }
     constexpr auto release() -> void { sem_.release(); }
+};
+
+struct semaphore_pair
+{
+    simple_semaphore sender;
+    simple_semaphore receiver;
+};
+
+struct ThreadSemaphores
+{
+    std::vector<semaphore_pair> semaphores_;
+
+    explicit constexpr ThreadSemaphores(/*in*/ const size_t num_threads)
+        : semaphores_(std::vector<semaphore_pair>(num_threads))
+    {}
+
+    inline constexpr auto ready_to_recv_from(/*in*/ const size_t id) -> void { semaphores_[id].sender.acquire(); }
+
+    inline constexpr auto done_recving_from(/*in*/ const size_t id) -> void { semaphores_[id].receiver.release(); }
+
+    inline constexpr auto completed_work(/*in*/ const size_t id) -> void
+    {
+        semaphores_[id].sender.release();
+        semaphores_[id].receiver.acquire();
+    }
 };
 
 [[nodiscard]] auto Tree::operator()(const Config &config, const std::span<fp> dataset) const -> Bin
@@ -53,9 +78,6 @@ class simple_semaphore
         return output;
     };
 
-    std::vector<simple_semaphore> senders(config.size);
-    std::vector<simple_semaphore> receivers(config.size);
-
     std::vector<fp> ranges(config.bins);
     fp f{ config.max };
     fp diff{ (config.max - config.min) / static_cast<fp>(config.bins) };
@@ -66,9 +88,11 @@ class simple_semaphore
         f -= diff;
     }
 
+    ThreadSemaphores thread_semaphores(config.threads);
+
     std::vector<Bin> bins{ config.threads };
 
-    auto task = [&config, &dataset, &get_recieves, &senders, &receivers, &bins](
+    auto task = [&config, &dataset, &get_recieves, &thread_semaphores, &bins](
                     /*in*/ size_t id, /*in*/ const std::span<fp> ranges, /*out*/ Bin &bin) -> void {
         const auto num_elements = config.size / config.threads;
         const auto starting_element = id * num_elements;
@@ -102,7 +126,7 @@ class simple_semaphore
         const auto recv_list = get_recieves(id);
 
         for (const auto recv_id : recv_list) {
-            senders[recv_id].acquire();
+            thread_semaphores.ready_to_recv_from(recv_id);
 
             const auto &recv_bin = bins[recv_id];
 
@@ -111,11 +135,10 @@ class simple_semaphore
                 bin.counts[i] += recv_bin.counts[i];
             }
 
-            receivers[recv_id].release();
+            thread_semaphores.done_recving_from(recv_id);
         }
 
-        senders[id].release();
-        receivers[id].acquire();
+        thread_semaphores.completed_work(id);
         return;
     };
 
@@ -126,11 +149,11 @@ class simple_semaphore
         threads.push_back(thread{ task, id, std::span{ ranges }, ref(bins[id]) });
     }
 
-    // No one can signal the first thread that it's all done except the main thread 
+    // No one can signal the first thread that it's all done except the main thread
     // so we'll handle that here
-    receivers[0].release();
+    thread_semaphores.semaphores_[0].receiver.release();
 
-    // theoretically the first thread should actually be the last to finish, so we'll 
+    // theoretically the first thread should actually be the last to finish, so we'll
     // join the threads in reverse order
     for (auto &thread : std::views::reverse(threads)) { thread.join(); }
 
