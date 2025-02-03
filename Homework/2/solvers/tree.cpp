@@ -4,6 +4,7 @@
 #include <bit>
 #include <semaphore>
 #include <thread>
+#include <ranges>
 
 namespace hpc {
 
@@ -30,19 +31,19 @@ class simple_semaphore
 
         if (id == 0) {
             size_t init = 1;
-            while (init < config.size) {
+            while (init < config.threads) {
                 output.push_back(init);
                 init <<= 1;
             }
         } else if (id % 2 == 0) {
             const size_t upper_bound = [&]() {
                 const size_t next_power_of_2 = std::bit_ceil(id + 1);
-                return std::min(config.size, next_power_of_2);
+                return std::min(config.threads, next_power_of_2);
             }();
 
             // OPTIMIZE: this for-loop is wasteful, and does many empty iterations because
             // `n` is often much greater than `config.size`
-            for (size_t j = 0; j < config.size - id; j++) {
+            for (size_t j = 0; j < config.threads - id; j++) {
                 const size_t x = 1 << j;
                 const size_t n = id + x;
                 if (id % x == 0 and n < upper_bound) { output.push_back(n); }
@@ -104,16 +105,20 @@ class simple_semaphore
         for (const auto recv_id : recv_list) {
             senders[recv_id].acquire();
 
-            const auto &recv_bin = bins[id];
+            const auto &recv_bin = bins[recv_id];
 
+            fmt::println("  -");
             for (size_t i = 0; i < config.bins; i++) {
                 bin.maxes[i] = std::max(bin.maxes[i], recv_bin.maxes[i]);
                 bin.counts[i] += recv_bin.counts[i];
             }
 
+            fmt::println("  -");
             receivers[recv_id].release();
+            fmt::println("  -");
         }
 
+        senders[id].release();
         receivers[id].acquire();
         return;
     };
@@ -125,7 +130,13 @@ class simple_semaphore
         threads.push_back(thread{ task, id, std::span{ ranges }, ref(bins[id]) });
     }
 
-    for (auto &thread : threads) { thread.join(); }
+    // No one can signal the first thread that it's all done except the main thread 
+    // so we'll handle that here 
+    receivers[0].release();
+
+    // theoretically the first thread should actually be the last to finish, so we'll 
+    // join the threads in reverse order
+    for (auto &thread : std::views::reverse(threads)) { thread.join(); }
 
     return bins[0];
 }
