@@ -3,8 +3,6 @@ NAME ?= waddoups
 
 build: build_dir
 	cmake --build ${BUILD_DIR}
-	@echo ""
-	@echo "Binaries are found in ${BUILD_DIR}"
 
 .PHONY: build_dir
 build_dir:
@@ -23,20 +21,3 @@ submission: main_artifact
 	cd ..; \
 		tar --exclude='*/${BUILD_DIR}/*' --exclude='tests/*' --exclude='*/\.*' \
 		--exclude='*.tar.gz' -cvzf ${NAME}_hw2.tar.gz ${CURDIR}
-
-.PHONY: cli_test
-cli_test: build 
-	@echo ""
-	@echo "##### Basic test #####"
-	@cd ${BUILD_DIR}; \
-		./cli 4 10 0.0 5.0 100
-	@echo ""
-	@echo "##### Uneven Elements test #####"
-	@cd ${BUILD_DIR}; \
-		./cli 3 10 0.0 5.0 79
-
-.PHONY: run_auto 
-run_auto: build
-	@echo "Running auto tests... May take some time..."
-	@mkdir -p results
-	./build/auto > results/log.txt
