@@ -107,15 +107,12 @@ class simple_semaphore
 
             const auto &recv_bin = bins[recv_id];
 
-            fmt::println("  -");
             for (size_t i = 0; i < config.bins; i++) {
                 bin.maxes[i] = std::max(bin.maxes[i], recv_bin.maxes[i]);
                 bin.counts[i] += recv_bin.counts[i];
             }
 
-            fmt::println("  -");
             receivers[recv_id].release();
-            fmt::println("  -");
         }
 
         senders[id].release();
