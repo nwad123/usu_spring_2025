@@ -1,14 +1,75 @@
 #include "solvers/tree.hpp"
 
 #include <algorithm>
+#include <bit>
+#include <semaphore>
 #include <thread>
 
 namespace hpc {
-[[nodiscard]] auto Tree::operator()(const Config &config, const std::span<fp> dataset) const -> Bin {
+
+class simple_semaphore
+{
+  private:
+    std::binary_semaphore sem_;
+
+  public:
+    constexpr simple_semaphore() : sem_(0) {}
+
+    constexpr auto acquire() -> void { sem_.acquire(); }
+    constexpr auto release() -> void { sem_.release(); }
+};
+
+[[nodiscard]] auto Tree::operator()(const Config &config, const std::span<fp> dataset) const -> Bin
+{
     using std::thread;
     using std::ref;
 
-    auto task = [&config, &dataset](/*in*/ size_t id, /*in*/ const std::span<fp> ranges, /*out*/ Bin &bin) {
+    // OPTIMIZE: this whole function works fine but definitely does some extra work.
+    auto get_recieves = [&config](/*in*/ const size_t id) -> std::vector<size_t> {
+        std::vector<size_t> output;
+
+        if (id == 0) {
+            size_t init = 1;
+            while (init < config.size) {
+                output.push_back(init);
+                init <<= 1;
+            }
+        } else if (id % 2 == 0) {
+            const size_t upper_bound = [&]() {
+                const size_t next_power_of_2 = std::bit_ceil(id + 1);
+                return std::min(config.size, next_power_of_2);
+            }();
+
+            // OPTIMIZE: this for-loop is wasteful, and does many empty iterations because
+            // `n` is often much greater than `config.size`
+            for (size_t j = 0; j < config.size - id; j++) {
+                const size_t x = 1 << j;
+                const size_t n = id + x;
+                if (id % x == 0 and n < upper_bound) { output.push_back(n); }
+            }
+        }
+
+        return output;
+    };
+
+    std::vector<simple_semaphore> senders(config.size);
+    std::vector<simple_semaphore> receivers(config.size);
+
+
+    std::vector<fp> ranges(config.bins);
+    fp f{ config.max };
+    fp diff{ (config.max - config.min) / static_cast<fp>(config.bins) };
+
+    for (auto it = ranges.rbegin(); it != ranges.rend(); ++it) {
+        auto &range = *it;
+        range = f;
+        f -= diff;
+    }
+
+    std::vector<Bin> bins{ config.threads };
+
+    auto task = [&config, &dataset, &get_recieves, &senders, &receivers, &bins](
+                    /*in*/ size_t id, /*in*/ const std::span<fp> ranges, /*out*/ Bin &bin) -> void {
         const auto num_elements = config.size / config.threads;
         const auto starting_element = id * num_elements;
 
@@ -36,19 +97,27 @@ namespace hpc {
         };
 
         for (const auto data : dataset_slice) { insert(data); }
+
+        // Receiving all the data
+        const auto recv_list = get_recieves(id);
+
+        for (const auto recv_id : recv_list) {
+            senders[recv_id].acquire();
+
+            const auto &recv_bin = bins[id];
+
+            for (size_t i = 0; i < config.bins; i++) {
+                bin.maxes[i] = std::max(bin.maxes[i], recv_bin.maxes[i]);
+                bin.counts[i] += recv_bin.counts[i];
+            }
+
+            receivers[recv_id].release();
+        }
+
+        receivers[id].acquire();
+        return;
     };
 
-    std::vector<fp> ranges(config.bins);
-    fp f{ config.max };
-    fp diff{ (config.max - config.min) / static_cast<fp>(config.bins) };
-
-    for (auto it = ranges.rbegin(); it != ranges.rend(); ++it) {
-        auto &range = *it;
-        range = f;
-        f -= diff;
-    }
-
-    std::vector<Bin> bins{ config.threads };
     std::vector<thread> threads{};
     threads.reserve(config.threads);
 
@@ -58,17 +127,6 @@ namespace hpc {
 
     for (auto &thread : threads) { thread.join(); }
 
-    Bin output{};
-    output.maxes.resize(config.bins);
-    output.counts.resize(config.bins);
-
-    for (auto &bin : bins) {
-        for (size_t i = 0; i < config.bins; i++) {
-            output.maxes[i] = std::max(bin.maxes[i], output.maxes[i]);
-            output.counts[i] += bin.counts[i];
-        }
-    }
-
-    return output;
+    return bins[0];
 }
 }// namespace hpc
