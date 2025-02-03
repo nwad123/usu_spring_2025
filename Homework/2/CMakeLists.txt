@@ -21,7 +21,7 @@ include_directories(include)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-set(SOLVERS solvers/serial.cpp solvers/parallel.cpp)
+set(SOLVERS solvers/serial.cpp solvers/parallel.cpp solvers/tree.cpp)
 set(SOURCES src/parse_args.cpp)
 
 # Add optimizations (comment out to remove)
@@ -32,7 +32,12 @@ add_executable(cli cli.cpp ${SOURCES} ${SOLVERS})
 target_link_libraries(cli fmt::fmt)
 target_compile_options(cli PUBLIC -O3 -flto -mtune=native -march=native)
 
-# Auto tester for different parameters
+# Auto tester for simple params 
+add_executable(test test.cpp ${SOURCES} ${SOLVERS})
+target_link_libraries(test fmt::fmt)
+target_compile_options(test PUBLIC -O3 -flto -mtune=native -march=native)
+
+# Auto program for generating output with different parameters
 add_executable(auto auto.cpp ${SOURCES} ${SOLVERS})
 target_link_libraries(auto fmt::fmt)
 target_compile_options(auto PUBLIC -O3 -flto -mtune=native -march=native)
