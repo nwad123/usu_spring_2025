@@ -1,11 +1,10 @@
-#include "concepts.hpp"
 #include "dataset_generator.hpp"
 #include "fmt/core.h"
 #include "parse_args.hpp"
 #include "solver_timer.hpp"
 #include "solvers/parallel.hpp"
 #include "solvers/serial.hpp"
-#include "strings.hpp"
+#include "solvers/tree.hpp"
 #include "types.hpp"
 
 #include <cstdlib>
@@ -22,11 +21,12 @@ auto main(int argc, char **argv) -> int
     const auto config = *config_opt;
 
     auto dataset = make_dataset(config);
-    const auto results = SolverTimer{ config, dataset }(Serial{}, Parallel{});
+    const auto results = SolverTimer{ config, dataset }(Serial{}, Parallel{}, Tree{});
 
-    fmt::println("Name,Threads,Elements,Time(ms)");
     for (const auto &result : results) {
-        fmt::println("{},{},{},{}", result.name, result.config.threads, result.config.size, result.time_ms);
+        fmt::println("{}", result.name);
+        fmt::println("Maxes:  {}", result.bin.maxes);
+        fmt::println("Counts: {}", result.bin.counts);
     }
 
     return 0;

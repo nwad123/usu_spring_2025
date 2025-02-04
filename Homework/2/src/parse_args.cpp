@@ -65,6 +65,11 @@ auto hpc::detail::parse_args(const std::span<char *> args) -> std::optional<Conf
         return std::nullopt;
     }
 
+    if (c.min > c.max) {
+        fmt::println("Minimum for dataset cannot be greater than maximum");
+        return std::nullopt;
+    }
+
     if (!parse_int(args[DATA_INDEX], c.size)) {
         fmt::println("Failed to get number of points in the dataset.");
         return std::nullopt;
