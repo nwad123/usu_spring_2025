@@ -1,4 +1,5 @@
 #include "solvers/parallel.hpp"
+#include "solvers/detail/bin_limits.hpp"
 
 #include <algorithm>
 #include <thread>
@@ -42,17 +43,9 @@ namespace hpc {
         for (const auto data : dataset_slice) { insert(data); }
     };
 
-    std::vector<fp> ranges(config.bins);
-    fp f{ config.max };
-    fp diff{ (config.max - config.min) / static_cast<fp>(config.bins) };
+    auto ranges = detail::get_bin_steps(config.bins, { config.min, config.max });
+    auto bins = std::vector<Bin> { config.threads };
 
-    for (auto it = ranges.rbegin(); it != ranges.rend(); ++it) {
-        auto &range = *it;
-        range = f;
-        f -= diff;
-    }
-
-    std::vector<Bin> bins{ config.threads };
     std::vector<thread> threads{};
     threads.reserve(config.threads);
 
@@ -75,4 +68,4 @@ namespace hpc {
 
     return output;
 }
-}// namespace hpc
+} // namespace hpc
