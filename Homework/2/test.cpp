@@ -1,19 +1,14 @@
 #include "dataset_generator.hpp"
+#include "solver_tester.hpp"
 #include "solvers/parallel.hpp"
 #include "solvers/serial.hpp"
 #include "solvers/tree.hpp"
 #include "types.hpp"
 
-#include <array>
+#include <random>
 #include <utility>
 
 using namespace hpc;
-
-template<typename... T>
-constexpr auto all_equal(const Bin &first, const T &...bins)
-{
-    return ((first == bins) and ...);
-}
 
 auto main() -> int
 {
@@ -22,38 +17,19 @@ auto main() -> int
     static constexpr std::pair<fp, fp> RANGE = { 0.0, 5.0 };
     static constexpr auto BINS = 5;
 
-    bool all_passed{ true };
+    auto dataset = make_dataset(RANGE.first, RANGE.second, SIZE, std::mt19937{ 100 });
 
     for (const auto THREAD : THREADS) {
-        const Config config(static_cast<size_t>(THREAD), BINS, RANGE.first, RANGE.second, SIZE);
-        auto dataset = make_dataset(config);
+        const Config config(static_cast<size_t>(THREAD), BINS, RANGE.first, RANGE.second, dataset.size());
 
-        const auto serial = Serial{}(config, dataset);
-        fmt::println("  Serial");
-        fmt::println("  Maxes: {}", serial.maxes);
-        fmt::println("  Counts: {}", serial.counts);
+        const auto solver_tester = SolverTester(config, dataset);
 
-
-        const auto parallel = Parallel{}(config, dataset);
-        fmt::println("  Parallel");
-        fmt::println("  Maxes: {}", parallel.maxes);
-        fmt::println("  Counts: {}", parallel.counts);
-
-
-        const auto tree = Tree{}(config, dataset);
-        fmt::println("  Tree");
-        fmt::println("  Maxes: {}", tree.maxes);
-        fmt::println("  Counts: {}", tree.counts);
-
-        if (all_equal(serial, parallel, tree)) {
-            fmt::println("Outputs are equal for all implementations");
+        if (not solver_tester(Serial{}, Parallel{}, Tree{})) {
+            fmt::println("Failed with parameters:");
+            config.print();
+            break;
         } else {
-            fmt::println("Not all outputs are equal!");
-            all_passed = false;
+            fmt::println("Passed");
         }
-    }
-
-    if (not all_passed) {
-        fmt::println("Not all tests passed");
     }
 }
