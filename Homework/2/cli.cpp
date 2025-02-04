@@ -18,6 +18,8 @@ auto main(int argc, char **argv) -> int
     const std::span<char *> args(argv, static_cast<std::size_t>(argc));
 
     const auto config_opt = parse_args(args);
+    if (not config_opt) { return EXIT_FAILURE; }
+
     const auto config = *config_opt;
 
     auto dataset = make_dataset(config);
@@ -25,8 +27,9 @@ auto main(int argc, char **argv) -> int
 
     for (const auto &result : results) {
         fmt::println("{}", result.name);
-        fmt::println("Maxes:  {}", result.bin.maxes);
-        fmt::println("Counts: {}", result.bin.counts);
+        fmt::println("  Time:   {}ms", result.time_ms);
+        fmt::println("  Maxes:  {}", result.bin.maxes);
+        fmt::println("  Counts: {}", result.bin.counts);
     }
 
     return 0;

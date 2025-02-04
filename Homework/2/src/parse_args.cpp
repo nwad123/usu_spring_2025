@@ -50,8 +50,18 @@ auto hpc::detail::parse_args(const std::span<char *> args) -> std::optional<Conf
         return std::nullopt;
     }
 
+    if (c.threads < 1) {
+        fmt::println("Cannot run program with {} threads. Threads must be greater than 0.", c.threads);
+        return std::nullopt;
+    }
+
     if (!parse_int(args[BINS_INDEX], c.bins)) {
         fmt::println("Failed to get number of bins.");
+        return std::nullopt;
+    }
+    
+    if (c.bins < 1) {
+        fmt::println("Cannot run program with {} bins. Bins must be greater than 0.", c.bins);
         return std::nullopt;
     }
 
@@ -72,6 +82,11 @@ auto hpc::detail::parse_args(const std::span<char *> args) -> std::optional<Conf
 
     if (!parse_int(args[DATA_INDEX], c.size)) {
         fmt::println("Failed to get number of points in the dataset.");
+        return std::nullopt;
+    }
+    
+    if (c.size < 1) {
+        fmt::println("Cannot run program with a dataset of size {}. Size must be greater than 0.", c.bins);
         return std::nullopt;
     }
 
