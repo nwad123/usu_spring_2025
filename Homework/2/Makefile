@@ -1,13 +1,16 @@
 BUILD_DIR := build
 NAME ?= waddoups
 
-build: build_dir
+build: build_ 
 	cmake --build ${BUILD_DIR}
+
+.PHONY: build_ 
+build_: build_dir
+	cd $(BUILD_DIR); cmake ..
 
 .PHONY: build_dir
 build_dir:
 	@mkdir -p $(BUILD_DIR);
-	cd $(BUILD_DIR); cmake ..
 
 .PHONY: clean
 clean:
