@@ -18,9 +18,8 @@ clean:
 	@rm -rf ${BUILD_DIR}
 
 .PHONY: submission
-submission: main_artifact
-# Add anything here that you want repeated for each submission
-	@echo "Copying file(s) to artifact directory"
+submission: 
+	@echo "Zipping together project files..."
 	cd ..; \
-		tar --exclude='*/${BUILD_DIR}/*' --exclude='tests/*' --exclude='*/\.*' \
-		--exclude='*.tar.gz' -cvzf ${NAME}_hw2.tar.gz ${CURDIR}
+		tar --exclude='build*' --exclude='.cache*' --exclude='.venv*' \
+		--exclude-vcs -cvzf ${NAME}_hw2.tar.gz -C ${CURDIR} .
