@@ -10,7 +10,7 @@ class Tree
 {
   public:
     static constexpr std::string_view name = "Tree";
-    
+
     [[nodiscard]]
     auto operator()(const Config &config, const std::span<fp> dataset) const -> Bin;
 
@@ -90,12 +90,17 @@ constexpr auto hpc::Tree::detail::get_receive_list(
             return std::min(num_threads, next_power_of_2);
         }();
 
+        const size_t max_iter = [&]() {
+            const size_t num_bits = 8 * sizeof(size_t);
+            return std::min(num_threads - thread_id, num_bits);
+        }();
+
         // OPTIMIZE: this for-loop is wasteful, and does many empty iterations because
         // `n` is often much greater than `config.size`
-        for (size_t j = 0; j < num_threads - thread_id; j++) {
-            const size_t x = 1 << j;
+        for (size_t j = 0; j < max_iter; j++) {
+            const size_t x = size_t{ 1 } << j; // if `1` is not wrapped with size_t it will quickly overflow
             const size_t n = thread_id + x;
-            if (thread_id % x == 0 and n < upper_bound) { output.push_back(n); }
+            if (thread_id % (x * 2) == 0 and n < upper_bound) { output.push_back(n); }
         }
     }
 
