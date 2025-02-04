@@ -14,7 +14,7 @@ auto main() -> int
 {
     // constants
     static constexpr auto THREADS = { 2, 3, 4, 5, 6, 7, 8, 9, 10 };
-    static constexpr auto SIZES = { 10'000'000, 100'000'000, 1'000'000'000 };
+    static constexpr auto SIZES = { 0, 100, 279, 592, 10'000'000 };
     static constexpr std::pair<fp, fp> RANGE = { 0.0, 5.0 };
     static constexpr auto BINS = 5;
 
@@ -25,7 +25,7 @@ auto main() -> int
     for (const auto SIZE : SIZES) {
         const auto size = static_cast<size_t>(SIZE);
 
-        fmt::println("Generating dataset with {} values", size);
+        fmt::println("\nGenerating dataset with {} values", size);
         auto dataset = make_dataset(RANGE.first, RANGE.second, size, std::mt19937{ 100 });
 
         for (const auto THREAD : THREADS) {
@@ -35,11 +35,11 @@ auto main() -> int
             const auto solver_tester = SolverTester(config, dataset);
 
             if (not solver_tester(Serial{}, Parallel{}, Tree{})) {
-                fmt::println("Failed test {} with parameters:", test_id);
+                fmt::println("\nFailed test {} with parameters:", test_id);
                 config.print();
                 break;
             } else {
-                fmt::println("Passed test {} with {} threads", test_id, thread);
+                fmt::println("  Passed test {} with {} threads", test_id, thread);
             }
 
             test_id++;
