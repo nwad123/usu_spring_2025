@@ -13,8 +13,8 @@ using namespace hpc;
 auto main() -> int
 {
     // constants
-    static constexpr auto THREADS = { 2, 3, 4, 5, 6, 7, 8, 9, 10 };
-    static constexpr auto SIZES = { 0, 100, 279, 592, 10'000'000 };
+    static constexpr auto THREADS = { 1, 2, 3, 4, 8, 16, 32, 64 };
+    static constexpr auto SIZES = { 0, 16, 200, 100, 279, 592, 10'000'000 };
     static constexpr std::pair<fp, fp> RANGE = { 0.0, 5.0 };
     static constexpr auto BINS = 5;
 
