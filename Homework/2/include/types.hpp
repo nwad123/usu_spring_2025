@@ -67,19 +67,10 @@ class Timer
 struct Result
 {
     std::string_view name;
-    size_t time_ms;
-    Bin bin;
+    size_t low_ms;
+    size_t high_ms;
+    size_t mean_ms;
     Config config;
-
-    constexpr Result() = default;
-    constexpr Result(const std::string_view name, const size_t time_ms, const Bin &&bin, const Config config)
-        : name(name), time_ms(time_ms), bin(bin), config(config)
-    {}
-
-    constexpr auto operator==(/*in*/ const Result &other) const -> bool
-    {
-        return config == other.config && bin == other.bin;
-    }
 };
 
 inline auto Config::print() const -> void
