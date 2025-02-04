@@ -33,6 +33,9 @@ auto SolverTester::operator()(/*in*/ S &&first, /*in*/ Ss &&...solvers) const ->
         return bins;
     };
 
-    return ((test(first) == test(solvers)) and ...);
+    // cache the first bin
+    const auto first_bin = test(first);
+
+    return ((first_bin == test(solvers)) and ...);
 }
 } // namespace hpc
