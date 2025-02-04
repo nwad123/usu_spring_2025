@@ -36,9 +36,9 @@ auto Tree::operator()(const Config &config, const std::span<fp> dataset) const -
             }
         }();
 
-        bin.maxes.resize(config.bins);
-        bin.counts.resize(config.bins);
+        bin.resize(config.bins);
 
+        // Calculate the bins for this subrange
         auto insert = [&ranges, &bin](const fp value) {
             auto bin_it = std::upper_bound(ranges.begin(), ranges.end(), value);
             // since bin_it will be always be equal to or ahead of `ranges.begin()`
@@ -52,7 +52,7 @@ auto Tree::operator()(const Config &config, const std::span<fp> dataset) const -
 
         for (const auto data : dataset_slice) { insert(data); }
 
-        // Receiving all the data
+        // Receive and merge results from other threads
         const auto recv_list = detail::get_receive_list(config.threads, id);
 
         for (const auto recv_id : recv_list) {
@@ -75,7 +75,7 @@ auto Tree::operator()(const Config &config, const std::span<fp> dataset) const -
     std::vector<thread> threads{};
     threads.reserve(config.threads);
 
-    for (size_t id = 0; id < config.threads; id++) {
+    for (const size_t id : std::views::iota(size_t{ 0 }, config.threads)) {
         threads.push_back(thread{ task, id, std::span{ bin_steps }, ref(bins[id]) });
     }
 
@@ -87,6 +87,6 @@ auto Tree::operator()(const Config &config, const std::span<fp> dataset) const -
     // join the threads in reverse order
     for (auto &thread : std::views::reverse(threads)) { thread.join(); }
 
-    return bins[0];
+    return std::move(bins[0]);
 }
 } // namespace hpc
