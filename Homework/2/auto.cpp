@@ -13,13 +13,13 @@ using namespace hpc;
 // constants
 static constexpr auto threads = std::initializer_list<size_t>{ 1, 2, 4, 8, 16, 32, 64, 128 };
 static constexpr auto sizes =
-    std::initializer_list<size_t>{ 100'000, 1'000'000, 10'000'000, 100'000'000, 1'000'000'000 };
+    std::initializer_list<size_t>{ 10'000, 100'000, 1'000'000, 10'000'000, 100'000'000, 1'000'000'000, 10'000'000'000 };
 
 static constexpr fp min = 0.0;
 static constexpr fp max = 5.0;
 static constexpr auto bins = 5;
 
-static constexpr size_t reps = 1;
+static constexpr size_t reps = 10;
 
 auto main() -> int
 {
