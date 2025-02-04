@@ -5,10 +5,8 @@
 #include "solvers/tree.hpp"
 #include "types.hpp"
 
-#include <array>
 #include <initializer_list>
 #include <random>
-#include <utility>
 
 using namespace hpc;
 
@@ -21,13 +19,15 @@ static constexpr fp min = 0.0;
 static constexpr fp max = 5.0;
 static constexpr auto bins = 5;
 
+static constexpr size_t reps = 1;
+
 auto main() -> int
 {
     // store all of our output data in the results array
     std::vector<Result> results;
 
     // start the csv header
-    fmt::println("Size,Name,Threads,Low,Mean,High");
+    fmt::println("Size,Name,Threads,Mean,Stddev,Min,Max");
 
     // handrolled cartesian product over all iterations
     for (const auto size : sizes) {
@@ -45,7 +45,7 @@ auto main() -> int
         for (const auto num_threads : threads) {
             const auto config = Config(num_threads, bins, min, max, size);
 
-            for (const auto &result : SolverTimer{ config, dataset }(Parallel{}, Tree{})) {
+            for (const auto &result : SolverTimer<reps>{ config, dataset }(Parallel{}, Tree{})) {
                 results.emplace_back(result);
             }
         }
@@ -53,13 +53,14 @@ auto main() -> int
         // Output the data for this specific size
         for (const auto &result : results) {
             fmt::println(
-                "{},{},{},{},{},{}",
+                "{},{},{},{},{},{},{}",
                 size,
                 result.name,
                 result.config.threads,
-                result.low_ms,
-                result.mean_ms,
-                result.high_ms
+                result.time_ms,
+                result.std_dev_ms,
+                result.min_ms,
+                result.max_ms
             );
         }
         results.clear();

@@ -54,11 +54,11 @@ class Timer
   public:
     Timer() : start_time(clock::now()) {}
 
-    size_t elapsed_ms() const
+    double elapsed_ms() const
     {
         const auto current = clock::now();
-        const auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(current - start_time);
-        return static_cast<size_t>(duration.count());
+        const auto duration = std::chrono::duration<double, std::milli>(current - start_time);
+        return duration.count();
     }
 
     void reset() { start_time = clock::now(); }
@@ -67,9 +67,10 @@ class Timer
 struct Result
 {
     std::string_view name;
-    size_t low_ms;
-    size_t high_ms;
-    size_t mean_ms;
+    double time_ms;
+    double std_dev_ms;
+    double min_ms;
+    double max_ms;
     Config config;
 };
 
