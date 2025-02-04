@@ -5,6 +5,8 @@
 #include "types.hpp"
 
 namespace hpc {
+template<size_t Iterations = 1>
+    requires(Iterations > 0)
 class SolverTimer
 {
   private:
@@ -18,17 +20,27 @@ class SolverTimer
     [[nodiscard]] auto operator()(/*in*/ S &&...solvers) -> std::array<Result, sizeof...(S)>;
 };
 
+template<size_t Iterations>
+    requires(Iterations > 0)
 template<Solver... S>
-auto SolverTimer::operator()(/*in*/ S &&...solvers) -> std::array<Result, sizeof...(S)>
+auto SolverTimer<Iterations>::operator()(/*in*/ S &&...solvers) -> std::array<Result, sizeof...(S)>
 {
     std::array<Result, sizeof...(S)> results;
 
     auto test = [&](/*in*/ Solver auto solver, /*in*/ const size_t index) {
-        Timer t{};
-        const auto bins = solver(config, dataset);
-        const auto elapsed = t.elapsed_ms();
+        std::array<size_t, Iterations> times;
 
-        results[index] = Result(solver.name, elapsed, std::move(bins), config);
+        for (auto &time : times) {
+            Timer t{};
+            const auto bins = solver(config, dataset);
+            time = t.elapsed_ms();
+        }
+
+        const auto low = std::ranges::min(times);
+        const auto high = std::ranges::max(times);
+        const auto average = std::reduce(times.cbegin(), times.cend()) / times.size();
+
+        results[index] = Result(solver.name, low, high, average, config);
     };
 
     size_t i{ 0 };
@@ -36,4 +48,4 @@ auto SolverTimer::operator()(/*in*/ S &&...solvers) -> std::array<Result, sizeof
 
     return results;
 }
-}// namespace hpc
+} // namespace hpc
