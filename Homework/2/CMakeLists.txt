@@ -22,22 +22,22 @@ include_directories(include)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 set(SOLVERS solvers/serial.cpp solvers/parallel.cpp solvers/tree.cpp)
-set(SOURCES src/parse_args.cpp)
+set(ARG_PARSER src/parse_args.cpp)
 
 set(OPTS -DNDEBUG -O3 -flto -mtune=native -march=native)
 # set(OPTS -DDEBUG -O0 -g3) # uncomment for debug
 
 # Command line interface application
-add_executable(cli cli.cpp ${SOURCES} ${SOLVERS})
+add_executable(cli cli.cpp ${ARG_PARSER} ${SOLVERS})
 target_link_libraries(cli fmt::fmt)
 target_compile_options(cli PRIVATE ${OPTS})
 
 # Auto tester for simple params 
-add_executable(test test.cpp ${SOURCES} ${SOLVERS})
+add_executable(test test.cpp ${SOLVERS})
 target_link_libraries(test fmt::fmt)
 target_compile_options(test PRIVATE ${OPTS})
 
 # Auto program for generating output with different parameters
-add_executable(auto auto.cpp ${SOURCES} ${SOLVERS})
+add_executable(auto auto.cpp ${SOLVERS})
 target_link_libraries(auto fmt::fmt)
 target_compile_options(auto PRIVATE ${OPTS})
