@@ -10,7 +10,9 @@ class Tree
 {
   public:
     static constexpr std::string_view name = "Tree";
-    [[nodiscard]] auto operator()(const Config &config, const std::span<fp> dataset) const -> Bin;
+    
+    [[nodiscard]]
+    auto operator()(const Config &config, const std::span<fp> dataset) const -> Bin;
 
   protected:
     struct detail
@@ -20,11 +22,6 @@ class Tree
             /*in*/ const size_t num_threads,
             /*in*/ const size_t thread_id
         ) -> std::vector<size_t>;
-
-        [[nodiscard]] static constexpr auto get_bin_ranges(
-            /*in*/ const size_t num_bins,
-            /*in*/ const std::pair<fp, fp> range
-        ) -> std::vector<fp>;
 
         struct simple_semaphore
         {
@@ -59,7 +56,7 @@ class Tree
                 semaphores_[id].receiver.release();
             }
 
-            inline constexpr auto completed_work(/*in*/ const size_t id) -> void
+            inline constexpr auto completed_work_on(/*in*/ const size_t id) -> void
             {
                 semaphores_[id].sender.release();
                 semaphores_[id].receiver.acquire();
@@ -70,5 +67,37 @@ class Tree
 static_assert(Solver<Tree>);
 } // namespace hpc
 
-/* ### Implementations ### */ 
 
+[[nodiscard]]
+constexpr auto hpc::Tree::detail::get_receive_list(
+    /*in*/ const size_t num_threads,
+    /*in*/ const size_t thread_id
+) -> std::vector<size_t>
+{
+    // OPTIMIZE: this whole function works fine but definitely does some extra work
+    // that slows it down
+    std::vector<size_t> output;
+
+    if (thread_id == 0) {
+        size_t init = 1;
+        while (init < num_threads) {
+            output.push_back(init);
+            init <<= 1;
+        }
+    } else if (thread_id % 2 == 0) {
+        const size_t upper_bound = [&]() {
+            const size_t next_power_of_2 = std::bit_ceil(thread_id + 1);
+            return std::min(num_threads, next_power_of_2);
+        }();
+
+        // OPTIMIZE: this for-loop is wasteful, and does many empty iterations because
+        // `n` is often much greater than `config.size`
+        for (size_t j = 0; j < num_threads - thread_id; j++) {
+            const size_t x = 1 << j;
+            const size_t n = thread_id + x;
+            if (thread_id % x == 0 and n < upper_bound) { output.push_back(n); }
+        }
+    }
+
+    return output;
+}

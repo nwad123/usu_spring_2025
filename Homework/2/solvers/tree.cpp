@@ -1,101 +1,26 @@
 #include "solvers/tree.hpp"
+#include "solvers/detail/bin_limits.hpp"
 
 #include <algorithm>
 #include <bit>
 #include <ranges>
-#include <semaphore>
 #include <thread>
 
 namespace hpc {
 
-namespace detail {
-    class simple_semaphore
-    {
-      private:
-        std::binary_semaphore sem_;
-
-      public:
-        constexpr simple_semaphore() : sem_(0) {}
-
-        constexpr auto acquire() -> void { sem_.acquire(); }
-        constexpr auto release() -> void { sem_.release(); }
-    };
-
-    struct semaphore_pair
-    {
-        simple_semaphore sender;
-        simple_semaphore receiver;
-    };
-
-    struct ThreadSemaphores
-    {
-        std::vector<semaphore_pair> semaphores_;
-
-        explicit constexpr ThreadSemaphores(/*in*/ const size_t num_threads)
-            : semaphores_(std::vector<semaphore_pair>(num_threads))
-        {}
-
-        inline constexpr auto ready_to_recv_from(/*in*/ const size_t id) -> void { semaphores_[id].sender.acquire(); }
-
-        inline constexpr auto done_recving_from(/*in*/ const size_t id) -> void { semaphores_[id].receiver.release(); }
-
-        inline constexpr auto completed_work(/*in*/ const size_t id) -> void
-        {
-            semaphores_[id].sender.release();
-            semaphores_[id].receiver.acquire();
-        }
-    };
-}// namespace detail
-
-[[nodiscard]] auto Tree::operator()(const Config &config, const std::span<fp> dataset) const -> Bin
+[[nodiscard]]
+auto Tree::operator()(const Config &config, const std::span<fp> dataset) const -> Bin
 {
     using std::thread;
     using std::ref;
 
-    // OPTIMIZE: this whole function works fine but definitely does some extra work.
-    auto get_recieves = [&config](/*in*/ const size_t id) -> std::vector<size_t> {
-        std::vector<size_t> output;
+    auto bin_steps = hpc::detail::get_bin_steps(config.bins, { config.min, config.max });
+    auto semaphores = detail::ThreadSemaphores(config.threads);
+    auto bins = std::vector<Bin>{ config.threads };
 
-        if (id == 0) {
-            size_t init = 1;
-            while (init < config.threads) {
-                output.push_back(init);
-                init <<= 1;
-            }
-        } else if (id % 2 == 0) {
-            const size_t upper_bound = [&]() {
-                const size_t next_power_of_2 = std::bit_ceil(id + 1);
-                return std::min(config.threads, next_power_of_2);
-            }();
-
-            // OPTIMIZE: this for-loop is wasteful, and does many empty iterations because
-            // `n` is often much greater than `config.size`
-            for (size_t j = 0; j < config.threads - id; j++) {
-                const size_t x = 1 << j;
-                const size_t n = id + x;
-                if (id % x == 0 and n < upper_bound) { output.push_back(n); }
-            }
-        }
-
-        return output;
-    };
-
-    std::vector<fp> ranges(config.bins);
-    fp f{ config.max };
-    fp diff{ (config.max - config.min) / static_cast<fp>(config.bins) };
-
-    for (auto it = ranges.rbegin(); it != ranges.rend(); ++it) {
-        auto &range = *it;
-        range = f;
-        f -= diff;
-    }
-
-    detail::ThreadSemaphores thread_semaphores(config.threads);
-
-    std::vector<Bin> bins{ config.threads };
-
-    auto task = [&config, &dataset, &get_recieves, &thread_semaphores, &bins](
-                    /*in*/ size_t id, /*in*/ const std::span<fp> ranges, /*out*/ Bin &bin) -> void {
+    auto task = [&config, &dataset, &semaphores, &bins](
+                    /*in*/ size_t id, /*in*/ const std::span<fp> ranges, /*out*/ Bin &bin
+                ) -> void {
         const auto num_elements = config.size / config.threads;
         const auto starting_element = id * num_elements;
 
@@ -128,10 +53,10 @@ namespace detail {
         for (const auto data : dataset_slice) { insert(data); }
 
         // Receiving all the data
-        const auto recv_list = get_recieves(id);
+        const auto recv_list = detail::get_receive_list(config.threads, id);
 
         for (const auto recv_id : recv_list) {
-            thread_semaphores.ready_to_recv_from(recv_id);
+            semaphores.ready_to_recv_from(recv_id);
 
             const auto &recv_bin = bins[recv_id];
 
@@ -140,10 +65,10 @@ namespace detail {
                 bin.counts[i] += recv_bin.counts[i];
             }
 
-            thread_semaphores.done_recving_from(recv_id);
+            semaphores.done_recving_from(recv_id);
         }
 
-        thread_semaphores.completed_work(id);
+        semaphores.completed_work_on(id);
         return;
     };
 
@@ -151,12 +76,12 @@ namespace detail {
     threads.reserve(config.threads);
 
     for (size_t id = 0; id < config.threads; id++) {
-        threads.push_back(thread{ task, id, std::span{ ranges }, ref(bins[id]) });
+        threads.push_back(thread{ task, id, std::span{ bin_steps }, ref(bins[id]) });
     }
 
     // No one can signal the first thread that it's all done except the main thread
     // so we'll handle that here
-    thread_semaphores.semaphores_[0].receiver.release();
+    semaphores.semaphores_[0].receiver.release();
 
     // theoretically the first thread should actually be the last to finish, so we'll
     // join the threads in reverse order
@@ -164,4 +89,4 @@ namespace detail {
 
     return bins[0];
 }
-}// namespace hpc
+} // namespace hpc
