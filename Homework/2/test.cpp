@@ -1,5 +1,4 @@
 #include "dataset_generator.hpp"
-#include "solver_tester.hpp"
 #include "solvers/parallel.hpp"
 #include "solvers/serial.hpp"
 #include "solvers/tree.hpp"

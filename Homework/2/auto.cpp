@@ -1,5 +1,5 @@
 #include "dataset_generator.hpp"
-#include "solver_tester.hpp"
+#include "solver_timer.hpp"
 #include "solvers/parallel.hpp"
 #include "solvers/serial.hpp"
 #include "solvers/tree.hpp"
@@ -28,7 +28,7 @@ auto main() -> int
         Config config(1, BINS, RANGE.first, RANGE.second, size);
         auto dataset = make_dataset(config);
 
-        SolverTester solver_tester(config, dataset);
+        SolverTimer solver_tester(config, dataset);
 
         for (const auto &result : solver_tester(Serial{})) { results.emplace_back(result); }
     }
@@ -39,7 +39,7 @@ auto main() -> int
             Config config(threads, BINS, RANGE.first, RANGE.second, size);
             auto dataset = make_dataset(config);
 
-            SolverTester solver_tester(config, dataset);
+            SolverTimer solver_tester(config, dataset);
 
             for (const auto &result : solver_tester(Parallel{}, Tree{})) { results.emplace_back(result); }
         }

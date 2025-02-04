@@ -5,21 +5,21 @@
 #include "types.hpp"
 
 namespace hpc {
-class SolverTester
+class SolverTimer
 {
   private:
     const Config config;
     const std::span<fp> dataset;
 
   public:
-    SolverTester(/*in*/ const Config config, /*in*/ const std::span<fp> dataset) : config(config), dataset(dataset) {}
+    SolverTimer(/*in*/ const Config config, /*in*/ const std::span<fp> dataset) : config(config), dataset(dataset) {}
 
     template<Solver... S>
     [[nodiscard]] auto operator()(/*in*/ S &&...solvers) -> std::array<Result, sizeof...(S)>;
 };
 
 template<Solver... S>
-auto SolverTester::operator()(/*in*/ S &&...solvers) -> std::array<Result, sizeof...(S)>
+auto SolverTimer::operator()(/*in*/ S &&...solvers) -> std::array<Result, sizeof...(S)>
 {
     std::array<Result, sizeof...(S)> results;
 
