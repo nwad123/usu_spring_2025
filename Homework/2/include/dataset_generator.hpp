@@ -8,7 +8,7 @@
 namespace hpc {
 template<std::uniform_random_bit_generator Generator>
 inline auto
-    make_dataset(/*in*/ const fp min, /*in*/ const fp max, /*in*/ const size_t size, /*in*/ Generator &generator)
+    make_dataset(/*in*/ const fp min, /*in*/ const fp max, /*in*/ const size_t size, /*in*/ Generator &&generator)
         -> std::vector<fp>
 {
     std::uniform_real_distribution<fp> distribution(min, max);
@@ -25,7 +25,6 @@ inline auto
 template<size_t Seed = 100>
 inline auto make_dataset(/*in*/ const Config &config) -> std::vector<fp>
 {
-    std::mt19937 generator(Seed);
-    return make_dataset(config.min, config.max, config.size, generator);
+    return make_dataset(config.min, config.max, config.size, std::mt19937{ Seed });
 }
-}// namespace hpc
+} // namespace hpc
