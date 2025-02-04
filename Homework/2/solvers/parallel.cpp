@@ -10,6 +10,9 @@ namespace hpc {
     using std::thread;
     using std::ref;
 
+    // This is the function that each thread performs. The basic steps are as follows:
+    // 1. Calculate what subset of data to operate on.
+    // 2. Calculate the bins for the subset of data.
     auto task = [&config, &dataset](/*in*/ size_t id, /*in*/ const std::span<fp> ranges, /*out*/ Bin &bin) {
         const auto num_elements = config.size / config.threads;
         const auto starting_element = id * num_elements;
@@ -49,12 +52,15 @@ namespace hpc {
     std::vector<thread> threads{};
     threads.reserve(config.threads);
 
+    // Calculate the bins on each thread separately
     for (size_t id = 0; id < config.threads; id++) {
         threads.push_back(thread{ task, id, std::span{ ranges }, ref(bins[id]) });
     }
 
+    // Wait for each thread to finish
     for (auto &thread : threads) { thread.join(); }
 
+    // Merge the output from all threads together
     Bin output{};
     output.maxes.resize(config.bins);
     output.counts.resize(config.bins);

@@ -18,6 +18,11 @@ auto Tree::operator()(const Config &config, const std::span<fp> dataset) const -
     auto semaphores = detail::ThreadSemaphores(config.threads);
     auto bins = std::vector<Bin>{ config.threads };
 
+    // This is the operation that each thread performs. The basic steps are as follows:
+    // 1. Calculate the subset of data to operate on for the current thread
+    // 2. Calculate the bins for the data
+    // 3. Recieve and merge bins from other threads
+    // 4. Wait until our result has been receieved and then return
     auto task = [&config, &dataset, &semaphores, &bins](
                     /*in*/ size_t id, /*in*/ const std::span<fp> ranges, /*out*/ Bin &bin
                 ) -> void {
@@ -50,6 +55,7 @@ auto Tree::operator()(const Config &config, const std::span<fp> dataset) const -
             if (bin.maxes[index] < value) { bin.maxes[index] = value; }
         };
 
+        // Calculate bins for this thread
         for (const auto data : dataset_slice) { insert(data); }
 
         // Receive and merge results from other threads
@@ -68,6 +74,8 @@ auto Tree::operator()(const Config &config, const std::span<fp> dataset) const -
             semaphores.done_recving_from(recv_id);
         }
 
+        // Inform other threads that our bins are ready to be consumed, and wait
+        // for another thread to consume them.
         semaphores.completed_work_on(id);
         return;
     };
@@ -75,6 +83,7 @@ auto Tree::operator()(const Config &config, const std::span<fp> dataset) const -
     std::vector<thread> threads{};
     threads.reserve(config.threads);
 
+    // Spawn all of the worker threads
     for (const size_t id : std::views::iota(size_t{ 0 }, config.threads)) {
         threads.push_back(thread{ task, id, std::span{ bin_steps }, ref(bins[id]) });
     }

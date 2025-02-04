@@ -4,6 +4,9 @@
 
 namespace hpc::detail {
 
+/// This function calculates what the bounds are for each bin when given the number of 
+/// bins and the range of the dataset.
+///
 /// Precondition: `range` must be a sorted pair, where `first <= second` always holds
 [[nodiscard]]
 static constexpr auto get_bin_steps(

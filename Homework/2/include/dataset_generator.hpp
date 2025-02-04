@@ -6,6 +6,7 @@
 #include <random>
 
 namespace hpc {
+/// Generate a random dataset of `fp` values ranging from `min` to `max` with a length of `size`.
 template<std::uniform_random_bit_generator Generator>
 inline auto
     make_dataset(/*in*/ const fp min, /*in*/ const fp max, /*in*/ const size_t size, /*in*/ Generator &&generator)
@@ -22,6 +23,7 @@ inline auto
     return dataset;
 }
 
+// Alias of `make_dataset` that takes a config parameter for easy use.
 template<size_t Seed = 100>
 inline auto make_dataset(/*in*/ const Config &config) -> std::vector<fp>
 {

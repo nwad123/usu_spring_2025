@@ -30,6 +30,7 @@ namespace hpc {
         if (bin.maxes[index] < value) { bin.maxes[index] = value; }
     };
 
+    // Calculate the bins for the whole dataset
     for (const auto data : dataset) { insert(data); }
 
     return bin;

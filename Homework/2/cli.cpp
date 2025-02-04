@@ -13,8 +13,11 @@
 
 using namespace hpc;
 
+/// A small command line application that calculates the histogram of 
+/// the input config.
 auto main(int argc, char **argv) -> int
 {
+    // Check args
     const std::span<char *> args(argv, static_cast<std::size_t>(argc));
 
     const auto config_opt = parse_args(args);
@@ -22,6 +25,7 @@ auto main(int argc, char **argv) -> int
 
     const auto config = *config_opt;
 
+    // Generate the histograms using each available solver
     auto dataset = make_dataset(config);
     const auto results = SolverRunner{ config, dataset }(Serial{}, Parallel{}, Tree{});
 

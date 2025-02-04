@@ -6,6 +6,12 @@
 #include <cmath>
 
 namespace hpc {
+
+/// `SolverTimer` objects are constructed with a given `config` and `dataset` and
+/// parameterized with an `Iteration` count, and then run a given set of solvers on
+/// the `config` and `dataset` `Iteration` times. An array of `Result` types are
+/// produced including the average, min, max, and std deviation time the solver took
+/// over `Iteration` times.
 template<size_t Iterations = 1>
     requires(Iterations > 0)
 class SolverTimer
@@ -15,8 +21,13 @@ class SolverTimer
     const std::span<fp> dataset;
 
   public:
+    /// The `dataset` span must outlive the `SolverTimer` object, as the `SolverTimer` does not
+    /// take ownership or copy the span.
     SolverTimer(/*in*/ const Config config, /*in*/ const std::span<fp> dataset) : config(config), dataset(dataset) {}
 
+    /// Calling `SolverTimer.operator()` produces an array of timing results after running the solvers
+    /// on the dataset. Note that all actual results (histogram bins) are lost, as this object is
+    /// soley for timing, and not for correctness or results.
     template<Solver... S>
     [[nodiscard]] auto operator()(/*in*/ S &&...solvers) -> std::array<Result, sizeof...(S)>;
 };

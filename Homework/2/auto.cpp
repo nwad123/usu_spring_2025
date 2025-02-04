@@ -21,6 +21,9 @@ static constexpr auto bins = 5;
 
 static constexpr size_t reps = 10;
 
+// Runs timing analysis on all combinations of `threads` and `sizes`. `reps` indicates how many 
+// iterations of the test should be run. More iterations give better data (especially for std 
+// deviation) but take linearly longer.
 auto main() -> int
 {
     // store all of our output data in the results array

@@ -10,6 +10,8 @@
 
 using namespace hpc;
 
+/// Tests that outputs from each solver are equal for all combinations of 
+/// `THREADS` and `SIZES`
 auto main() -> int
 {
     // constants
@@ -21,7 +23,7 @@ auto main() -> int
     // id for tests
     size_t test_id{ 0 };
 
-    // handrolled cartesian product for different configurations
+    // handrolled cartesian product for all different configurations
     for (const auto SIZE : SIZES) {
         const auto size = static_cast<size_t>(SIZE);
 
