@@ -192,6 +192,8 @@ $$ t = \frac{ L }{ v } = \frac{ L }{ \frac{ V_{ds} }{ L } } = \frac{ L^2 }{ \mu 
 
 ### Combining All The Parts
 
+_This is known as the Shockley model_
+
 $$ I_{ds} = \frac{ Q }{ t } = \mu \frac{\epsilon_{ox}}{t_{ox}} \frac{W}{L} ((V_{gs} - V_t)V_{ds} - \frac{V_{ds}^2}{2}) $$
 
 All done, easy peasy.

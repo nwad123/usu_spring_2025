@@ -1,6 +1,6 @@
 # Linear I-V NMOS
 
-As a review of last time: 
+As a review of last time (Shockley model): 
 
 $$ I_{ds} = \frac{ Q }{ t } = \mu \frac{\epsilon_{ox}}{t_{ox}} \frac{W}{L} ((V_{gs} - V_t)V_{ds} - \frac{V_{ds}^2}{2}) $$
 
@@ -12,7 +12,7 @@ $$ I_{ds} = \frac{ Q }{ t } = \Beta ((V_{gs} - V_t)V_{ds} - \frac{V_{ds}^2}{2}) 
 
 ## Exercise 1
 
-Substitute in $ V_{ds} = V_{gs} - V_t $, we can only supplant $ V_{ds} $ in before saturation.
+Substitute in $ V_{ds} = V_{gs} - V_t $, we can only supplant $ V_{ds} $ in for saturation.
 
 $$ I_{ds} = \frac{ Q }{ t } = \Beta ((V_{gs} - V_t)(V_{gs} - V_t) - \frac{ {V_{gs} - V_t }^2 }{ 2 }) $$
 
@@ -34,7 +34,7 @@ $$ I_{ds} = \frac{ Q }{ t } = \Beta ( \frac{ (V_{gs} - V_t)(V_{gs} - V_t) }{ 2 }
 
 3. Saturation 
     
-   $$ I_{ds} = \frac{ Q }{ t } = \Beta ( \frac{ (V_{gs} - V_t)(V_{gs} - V_t) }{ 2 } ) $$
+$$ I_{ds} = \frac{ Q }{ t } = \Beta ( \frac{ (V_{gs} - V_t)(V_{gs} - V_t) }{ 2 } ) $$
 
 ## Example 
 
