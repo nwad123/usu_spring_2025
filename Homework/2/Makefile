@@ -21,6 +21,7 @@ clean:
 	@echo "Removing build directory (${BUILD_DIR})..."
 	@rm -rf ${BUILD_DIR}
 	@rm -f ${HISTOGRAM_PATH}
+	@rm -rf .cache
 
 # Zips all data together for submitting to canvas
 .PHONY: submission
