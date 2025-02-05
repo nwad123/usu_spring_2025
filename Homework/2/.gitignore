@@ -1,5 +1,0 @@
-build/*
-.cache/*
-.venv/*
-results/*
-histogram
