@@ -98,6 +98,34 @@ Probably just look at the docs for more information.
 
 Marks private variables for each for loop.
 
+### Shared
+
+```cpp 
+#pragma omp parallel for /*clauses*/ Shared(/*variable*/)
+/*for-loop block*/
+```
+
+Marks shared variables for each for loop.
+
+### Default 
+
+```cpp 
+#pragma omp parallel for /*clauses*/ default(/*variable*/)
+/*for-loop block*/
+```
+
+Marks the default scope for variables. Using `default(none)` is good to ensure good 
+compiler warning.
+
+### Schedule 
+
+```cpp 
+#pragma omp parallel for /*clauses*/ schedule(/*variable*/)
+/*for-loop block*/
+```
+
+Tells the compiler how to schedule the work on each thread.
+
 ## Data Dependencies for Loop Iterations
 
 Sometimes if one loop iteration depends on previous loop iterations, then parallelizing 
