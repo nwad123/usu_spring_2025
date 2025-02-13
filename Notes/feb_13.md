@@ -68,4 +68,99 @@ $$
 C_{pi} = 2n (\text{pmos}) + n (\text{nmos}) = 3n 
 $$
 
+# Ring Oscillator Delay 
 
+Delay of one NOT gate 
+
+$$
+g = 1 
+$$ 
+
+$$ 
+h = 1 
+$$
+
+$$
+p = 1
+$$
+
+$$
+d = gh + p = 2
+$$
+
+$$
+d_{all} = 2n 
+$$
+
+$$
+f_{all} = \frac{ 1 }{ 2 \cdot d_{all} }
+$$
+
+# Fanout of 4 Inverter 
+
+$$
+g = 1 
+$$
+
+$$
+h = \frac{ C_{out} }{ C_{in} }
+$$
+
+$$
+p = 1
+$$ 
+
+$$ 
+d = 1 \cdot 4 + 1 = 5
+$$
+
+# 4 input NOR gate driving 10 identical Gates 
+
+$$ 
+g = \frac{ 2n + 1 }{ 3 } = 3 
+$$
+
+$$
+h = \frac{ C_{out} }{ C_{in} } = 10
+$$
+
+> Note: we can simply calculate $h$ because we know that $C_{out} = x \cdot C_{in}$, 
+> where $x$ is the number of equivalent output gates.
+
+$$
+p = n = 4
+$$
+
+$$
+d = gh + p = 3 \cdot 10 + 4 = 34
+$$
+
+# Multistage Logic Networks 
+
+Path logical effort:
+$$
+G = \Pi g_i
+$$
+
+Path electrical effort:
+$$
+H = \frac{ C_{out-path} }{ C_{in-path} } = \Pi h_i 
+$$
+
+Total path effort:
+$$
+F = \Pi f_i = \Pi g_i h_i 
+$$
+
+In python:
+
+```python 
+def G(gs: list[float]) -> float:
+    return reduce(lambda l, r : l * r, gs)
+
+def H(hs: list[float]) -> float:
+    return reduce(lambda l, r : l * r, gs)
+
+def F(gs: list[float], hs: list[float]) -> float:
+    return reduce(lambda (lg, lh), (rg, rh) : lg * lh * rg * rh, zip(gs, hs))
+```
