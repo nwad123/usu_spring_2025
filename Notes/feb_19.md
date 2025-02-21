@@ -23,21 +23,32 @@ then incrementally checking the formula.
 ## Lazy - SMT Algorithm 
 
 ```python
+# qff is a quantifier free formula 
+
+def a(qff): -> qff
+    """ Abstracts over a qff """
+    pass 
+
+def c(qff): -> qff
+    """ Concretes a qff """
+    pass 
+
 def lazy_smt(phi: qff) -> Sat | Unsat:
-    F = a(phi) # `a` is something about applying the alphabet 
+    abstract_qff = a(phi)
     
     while True:
-        A = get_model(F) 
+        A = get_model(abstract_qff) # Check the model as a boolen SAT problem
 
-        if A is None:
+        if A is None: # If the abstract_qff if unsatisfiable, then return unsat
             return Unsat 
 
         else:
-            mu = check_sat(A)
+            mu = check_sat(c(A)) # concretize A, then use the theorem solver to check 
+                                 # if it's satisfiable
             if mu is Sat:
                 return Sat
             else 
-                F = F and not a(mu)
+                qbstract_qff = abstract_qff and not a(mu) # stregnthen the abstract
 ```
 
 ## Rectangle Fitting Example 
