@@ -35,3 +35,15 @@ unevenly scatter data.
 To fetch distributed data together, we'll use `MPI_Gather`, which is basically the 
 opposite of `MPI_Scatter`.
 
+# Midterm 
+
+Things not on the midterm:
+- MPI
+- Networking 
+- CHPC 
+
+Thing on the midterm:
+- Pipelining 
+- Caching 
+- Flynn's taxonomy 
+- Performance scaling 
