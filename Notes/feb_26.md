@@ -47,3 +47,10 @@ Thing on the midterm:
 - Caching 
 - Flynn's taxonomy 
 - Performance scaling 
+
+Threads and OpenMP 
+- Critical sections 
+- Synch mechanisms 
+- OpenMP Directives 
+- Scope of variables 
+- Thread scheduling 
