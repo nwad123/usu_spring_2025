@@ -142,7 +142,7 @@ void vecAddCuda(/*in*/ const float* A_h,
     vecAddKernel<<<DimGrid, DimBlock>>>(A_d, B_d, C_d, n);
 
     // 3.2 Wait for kernel to finish 
-    cudaSynchronize();
+    cudaDeviceSynchronize();
 
     // 4. Transfer back to host memory (don't need A, B, as they are not modified)
     cudaMemcpy(C_h, C_d, size, cudaMemcpyDeviceToHost);
