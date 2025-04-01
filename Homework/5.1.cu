@@ -11,10 +11,8 @@ __global__ void rgb_to_gray(const byte* rgb_d, byte* gray_d, const size_t num_pi
 {
     const auto pixel_index = blockIdx.x * blockDim.x + threadIdx.x;
 
-    printf("%d\n", pixel_index);
-
     if (pixel_index < num_pixels) {
-        const byte red = 0.21f * static_cast<float>(rgb_d[pixel_index]);
+        const byte red = 0.21f * rgb_d[pixel_index];
         const byte green = 0.71f * rgb_d[pixel_index + 1];
         const byte blue = 0.07f * rgb_d[pixel_index + 2];
 
